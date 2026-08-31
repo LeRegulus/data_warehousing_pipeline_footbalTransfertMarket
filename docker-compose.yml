@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:16
+    container_name: dw_football_db
+    environment:
+      POSTGRES_DB: dw_football
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Exécuté automatiquement UNE SEULE FOIS, au tout premier démarrage
+      # (volume pgdata vide). Pour rejouer le DDL: docker compose down -v
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  etl:
+    build: .
+    container_name: dw_football_etl
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data:ro
+    command:
+      [
+        "python", "src/etl_pipeline.py",
+        "--data-dir", "data",
+        "--db-url", "postgresql://postgres:postgres@db:5432/dw_football",
+        "--today", "2026-08-21"
+      ]
+    profiles: ["etl"]   # ne démarre pas avec `docker compose up` ; se lance à la demande
+
+  dashboard:
+    build: .
+    container_name: dw_football_dashboard
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8501:8501"
+    command:
+      [
+        "streamlit", "run", "src/dashboard.py",
+        "--server.address=0.0.0.0",
+        "--",
+        "--db-url", "postgresql://postgres:postgres@db:5432/dw_football"
+      ]
+
+  # Interface web pour naviguer/requêter la base pendant une démo (tables, données, SQL libre).
+  # Démarre avec `docker compose up` comme db/dashboard (pas besoin du profil etl).
+  adminer:
+    image: adminer:latest
+    container_name: dw_football_adminer
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

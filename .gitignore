@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+data/*.csv
+!data/generate_synthetic.py
+.env
+*.egg-info/
+rapport_projet_football.docx
+rapport_projet_football.docx.bak2
+rapport_projet_football.docx.bak
+rapport_projet_football.pdf.bak
+rapport_projet_football.pdf
+Projet_data-warehouse_et_reporting.pdf
