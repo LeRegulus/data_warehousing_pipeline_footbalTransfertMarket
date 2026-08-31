@@ -2,6 +2,8 @@
 
 Pipeline complet : ingestion → contrôle qualité → constellation de faits → chargement PostgreSQL → dashboard interactif.
 
+Dépôt GitHub : [LeRegulus/data_warehousing_pipeline_footbalTransfertMarket](https://github.com/LeRegulus/data_warehousing_pipeline_footbalTransfertMarket)
+
 Dataset source : [Football Data from Transfermarkt](https://www.kaggle.com/datasets/davidcariboo/player-scores) (Kaggle).
 
 ## Structure du dépôt
